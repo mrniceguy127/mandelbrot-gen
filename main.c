@@ -57,10 +57,11 @@ float squared_modulus(complex z) {
 void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int iterates) {
   for (unsigned int i = 0; i < pixmap->height; i++) {
     for (unsigned int j = 0; j < pixmap->width; j++) {
-      // TODO: Clarify magic numbers
-      float scaledJ = (2.5 / (float) pixmap->width);
-      float scaledI = (2.0 / (float) pixmap->height);
-      float complex c = ((scaledJ * (float) j) - 2) + (I * (((scaledI * (float) i) - 1)));
+      float x_scale_factor = (3.5 / (float) pixmap->width); // Keeps x in the scaled range (-2.5+2.5, 1+2.5)
+      float y_scale_factor = (2.0 / (float) pixmap->height); // Keeps y in the scaled range (-1+1, 1+1)
+      float x = (x_scale_factor * (float) j) - 2.5; // Puts x into the range (-2.5, 1) * pixmap->width
+      float y = (y_scale_factor * (float) i) - 1; // Puts y into the range (-1, 1) * pixmap->height
+      float complex c = x + (I * y);
       float complex z = 0.0;
       pixel_t * pixel_to_color = pixel_at(pixmap, j, i);
 
@@ -86,8 +87,8 @@ void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int it
 
 
 int main() {
-  const unsigned int IMG_WIDTH = 1000;
-  const unsigned int IMG_HEIGHT = 1000;
+  const unsigned int IMG_WIDTH = 2801;
+  const unsigned int IMG_HEIGHT = 2001;
  
   pixmap_t pixmap;
   pixmap.pixels = calloc(IMG_WIDTH * IMG_HEIGHT, sizeof(pixel_t));
@@ -98,15 +99,12 @@ int main() {
     return -1;
   }
   
-  int status; 
-  status = 0;
-
-  pixel_t COLOR_K; // 'Special' color (in the mandelbrot)
+  pixel_t COLOR_K; // 'Special' color (in the mandelbrot, so black probably)
   COLOR_K.r = 0x00;
   COLOR_K.g = 0x00;
   COLOR_K.b = 0x00;
 
-  const unsigned int iterates = 1000;
+  const unsigned int iterates = 500;
 
   color_mandelbrot_pixmap(&pixmap, COLOR_K, iterates);
   unsigned int write_png_status = write_png_from_pixmap(&pixmap, "mandel.png");
