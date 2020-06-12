@@ -86,8 +86,8 @@ void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int it
 
 
 int main() {
-  const unsigned int IMG_WIDTH = 2401;
-  const unsigned int IMG_HEIGHT = 2001;
+  const unsigned int IMG_WIDTH = 1000;
+  const unsigned int IMG_HEIGHT = 1000;
  
   pixmap_t pixmap;
   pixmap.pixels = calloc(IMG_WIDTH * IMG_HEIGHT, sizeof(pixel_t));
