@@ -1,14 +1,19 @@
 .PHONY: build clean run
 
 cc = gcc
-main = main.c
-out = mandle
+main = main.c writepng.c
+libs = png
+
+build_dir = ./build
+out = $(build_dir)/mandel
 
 build: $(main)
-	$(cc) $(main) -o $(out)
+	mkdir -p $(build_dir)
+	$(cc) $(main) -o $(out) -l $(libs)
 
 clean:
 	-\rm $(out)
+	-\rm -r $(build_dir)
 
 run: $(out)
-	./$(out)
+	$(out)
