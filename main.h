@@ -8,10 +8,12 @@
 *
 * Note(s):
 */
+
 #ifndef MAIN_H
 #define MAIN_H
 
-unsigned int squared_modulus(complex z);
-void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, pixel_t COLOR_NOTK, unsigned int iterates);
+pixel_t color_n(unsigned int n);
+float squared_modulus(complex z);
+void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int iterates);
 
 #endif
