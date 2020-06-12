@@ -40,18 +40,18 @@ void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, pixel_t COLOR_N
       int is_in_mandelbrot = TRUE;
       while (n < iterates && is_in_mandelbrot) {
         if (squared_modulus(z) > 4) {
-	  pixel_to_color->r = COLOR_K.r;
-	  pixel_to_color->g = COLOR_K.g;
-	  pixel_to_color->b = COLOR_K.b;
+	  pixel_to_color->r = COLOR_NOTK.r;
+	  pixel_to_color->g = COLOR_NOTK.g;
+	  pixel_to_color->b = COLOR_NOTK.b;
 	  is_in_mandelbrot = FALSE;
 	}
 	z = (z*z) + c;
 	n++;
       }
       if (is_in_mandelbrot) {
-        pixel_to_color->r = COLOR_NOTK.r;
-        pixel_to_color->g = COLOR_NOTK.g;
-        pixel_to_color->b = COLOR_NOTK.b;
+        pixel_to_color->r = COLOR_K.r;
+        pixel_to_color->g = COLOR_K.g;
+        pixel_to_color->b = COLOR_K.b;
       }
     }
   }
@@ -74,14 +74,14 @@ int main() {
   int status; 
   status = 0;
 
+  pixel_t COLOR_NOTK; 
+  COLOR_NOTK.r = 0x0;
+  COLOR_NOTK.g = 0x0;
+  COLOR_NOTK.b = 0x0;
   pixel_t COLOR_K; // 'Special' color
-  COLOR_K.r = 0x0;
-  COLOR_K.g = 0x0;
-  COLOR_K.b = 0x0;
-  pixel_t COLOR_NOTK;
-  COLOR_NOTK.r = 0xFF;
-  COLOR_NOTK.g = 0xFF;
-  COLOR_NOTK.b = 0xFF;
+  COLOR_K.r = 0xFF;
+  COLOR_K.g = 0xFF;
+  COLOR_K.b = 0xFF;
 
   const unsigned int iterates = 1000;
 
