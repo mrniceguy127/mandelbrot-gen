@@ -2,7 +2,7 @@
 
 cc = gcc
 main = main.c writepng.c
-libs = png
+libs = png -lm
 
 build_dir = ./build
 out = $(build_dir)/mandel
