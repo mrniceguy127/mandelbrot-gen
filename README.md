@@ -26,6 +26,7 @@ Working on this whenever I feel like it. Plans include:
 Open the mandel.png file in your current working directory, and there it is!
 
 ![mandel.png](readme-assets/mandel.png "mandel.png")
+![zoom.png](readme-assets/zoom.png "zoom.png")
 
 ## License
 [GNU GPL v3.0](LICENSE)
