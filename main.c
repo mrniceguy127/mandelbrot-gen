@@ -10,7 +10,6 @@
 */
 
 
-// TODO add zooming by limiting pixels rendered (w/ i and j) and multiplying the pixmap height and width by some constant
 // TODO add cli interface
 // TODO Parallel processing
 
@@ -28,16 +27,17 @@
 #define FALSE 0
 
 // Coloring constants - https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
-static const double K = log10(2);
+static const double K = log10(100000);
 static const double colorCommonFactor = 1 / log10(2.);
-static const double a = 1 * colorCommonFactor;
-static const double b = 1 / (3 * sqrt(2.)) * colorCommonFactor;
-static const double c = 1 / (7 * pow(3., (1/8))) * colorCommonFactor;
+static const double r = 1 / (2.5 * sqrt(2.)) * colorCommonFactor;
+static const double g = 1 / (2.4 * sqrt(1.8)) * colorCommonFactor;
+static const double b = 1 * colorCommonFactor;
 
+// Coloring formula.
 pixel_t color_x(double x) {
-  double R = 255 * ((1 - cos(a*x)) / 2);
-  double G = 255 * ((1 - cos(b*x)) / 2);
-  double B = 255 * ((1 - cos(c*x)) / 2);
+  double R = 255 * ((1 - cos(r*x)) / 2);
+  double G = 255 * ((1 - cos(g*x)) / 2);
+  double B = 255 * ((1 - cos(b*x)) / 2);
 
   pixel_t color;
   color.r = R;
@@ -55,17 +55,33 @@ double squared_modulus(complex z) {
 }
 
 void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int iterates) {
+
+  /* Example zoom var vals:
+    const double zoomScale = 250000;
+    double complexLeft = -0.76;
+    double complexBottom = 0.0801;
+  */
+
+  // TODO clean.
+
+  const double zoomScale = 1;
+  double complexWidth = 3.5/zoomScale;
+  double complexHeight = 2.0/zoomScale;
+  double complexLeft = -2.5;
+  double complexBottom = -1.0;
+  double box[2][2] = {{complexLeft,complexLeft+complexWidth},{complexBottom,complexBottom+complexHeight}};
+
   for (unsigned int i = 0; i < pixmap->height; i++) {
     for (unsigned int j = 0; j < pixmap->width; j++) {
-      double x_scale_factor = ((3.5 / (double) pixmap->width)); // Keeps x in the scaled range (-2.5+2.5, 1+2.5)
-      double y_scale_factor = ((2.0 / (double) pixmap->height)); // Keeps y in the scaled range (-1+1, 1+1)
-      double idfk = 2.3; 
-      double x = (x_scale_factor * (double) j) - 2.5; // Puts x into the range (-2.5, 1) * pixmap->width
-      double y = (y_scale_factor * (double) i) - 1; // Puts y into the range (-1, 1) * pixmap->height
-      double complex c = x + (I * y);
-      double complex z = 0.0;
-      pixel_t * pixel_to_color = pixel_at(pixmap, j, i);
+      double x_scale_factor = ((complexWidth / (double) pixmap->width)); // X scaling multiplier based on pixmanp width and complex coordinate plane height
+      double y_scale_factor = ((complexHeight / (double) pixmap->height)); // Y scaling based on pixmap height and complex coordinate plane width
+      double x = (x_scale_factor * (double) j) + box[0][0]; // Puts x into the complex coordinate plane width bounds and current coordinate position
+      double y = (y_scale_factor * (double) i) + box[1][0]; // Puts x into the complex coordinate plane width bounds and current coordinate position
+      
+      double complex c = x + (I * y); // c from mandelbrot formula
+      double complex z = 0.0; // z from mandelbrot formula
 
+      pixel_t * pixel_to_color = pixel_at(pixmap, j, i);
       pixel_t color = COLOR_K;
 
       double power = 1.;
@@ -80,7 +96,7 @@ void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int it
 	  color = color_x(x);
 	  is_in_mandelbrot = FALSE;
 	}
-	z = (z*z) + c;
+	z = ((z*z) + c);
 	power *= 2;
 	n++;
       }
@@ -111,7 +127,8 @@ int main() {
   COLOR_K.g = 0x00;
   COLOR_K.b = 0x00;
 
-  const unsigned int iterates = 2000;
+  // TODO Increase iterates for deep zooms. CLI interface would be nice!!
+  const unsigned int iterates = 100; 
 
   color_mandelbrot_pixmap(&pixmap, COLOR_K, iterates);
   unsigned int write_png_status = write_png_from_pixmap(&pixmap, "mandel.png");
