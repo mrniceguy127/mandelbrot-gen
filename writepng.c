@@ -65,7 +65,7 @@ int write_png_from_pixmap(pixmap_t * pixmap, const char * path) {
   png_set_rows(png, info, row_pointers);
   png_write_png(png, info, PNG_TRANSFORM_IDENTITY, NULL);
 
-  for (unsigned int y; y < pixmap->height; y++) {
+  for (unsigned int y = 0; y < pixmap->height; y++) {
     free(row_pointers[y]);
   }
   free(row_pointers);
