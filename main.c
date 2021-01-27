@@ -133,6 +133,7 @@ int main() {
   color_mandelbrot_pixmap(&pixmap, COLOR_K, iterates);
   unsigned int write_png_status = write_png_from_pixmap(&pixmap, "mandel.png");
   
+  free(pixmap.pixels);
   if (write_png_status != 0) return -1;
   return 0;
 }
