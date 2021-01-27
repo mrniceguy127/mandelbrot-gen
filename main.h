@@ -13,7 +13,7 @@
 #define MAIN_H
 
 pixel_t color_x(double x);
-double squared_modulus(complex z);
+double squared_modulus(double complex z);
 void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int iterates);
 
 #endif
