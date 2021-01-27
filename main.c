@@ -27,17 +27,17 @@
 #define FALSE 0
 
 // Coloring constants - https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
-static const double K = log10(100000);
-static const double colorCommonFactor = 1 / log10(2.);
-static const double r = 1 / (2.5 * sqrt(2.)) * colorCommonFactor;
-static const double g = 1 / (2.4 * sqrt(1.8)) * colorCommonFactor;
-static const double b = 1 * colorCommonFactor;
+#define K ((double)log10(100000))
+#define COLOR_COMON_FACTOR ((double)(1 / log10(2.)))
+#define COLOR_R ((double)(1 / (2.5 * sqrt(2.)) * COLOR_COMON_FACTOR))
+#define COLOR_G ((double)(1 / (2.4 * sqrt(1.8)) * COLOR_COMON_FACTOR))
+#define COLOR_B ((double)(1 * COLOR_COMON_FACTOR))
 
 // Coloring formula.
 pixel_t color_x(double x) {
-  double R = 255 * ((1 - cos(r*x)) / 2);
-  double G = 255 * ((1 - cos(g*x)) / 2);
-  double B = 255 * ((1 - cos(b*x)) / 2);
+  double R = 255 * ((1 - cos(COLOR_R*x)) / 2);
+  double G = 255 * ((1 - cos(COLOR_G*x)) / 2);
+  double B = 255 * ((1 - cos(COLOR_B*x)) / 2);
 
   pixel_t color;
   color.r = R;
@@ -47,7 +47,7 @@ pixel_t color_x(double x) {
   return color;
 }
 
-double squared_modulus(complex z) {
+double squared_modulus(double complex z) {
   double x = creal(z);
   double y = cimag(z);
 
