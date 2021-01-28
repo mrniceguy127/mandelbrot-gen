@@ -19,6 +19,7 @@
 
 #include <complex.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "writepng.h"
 #include "main.h"
@@ -54,27 +55,29 @@ double squared_modulus(double complex z) {
   return (x*x) + (y*y);
 }
 
-void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int iterates) {
+void color_mandelbrot_pixmap(zoom_data user_zoom_data, pixmap_t * pixmap, pixel_t COLOR_K) {
 
   /* Example zoom var vals:
-    const double zoomScale = 250000;
-    double complexLeft = -0.76;
-    double complexBottom = 0.0801;
-  */
+    double zoom_scale = 250000;
+    double complex_left = -0.76;
+    double complex_bottom = 0.0801; */
+  
 
   // TODO clean.
+  // TODO Make coordinate bounds specifiable as arguments to the program
 
-  const double zoomScale = 1;
-  double complexWidth = 3.5/zoomScale;
-  double complexHeight = 2.0/zoomScale;
-  double complexLeft = -2.5;
-  double complexBottom = -1.0;
-  double box[2][2] = {{complexLeft,complexLeft+complexWidth},{complexBottom,complexBottom+complexHeight}};
+  unsigned int iterates = user_zoom_data.iterates;
+  double zoom_scale = user_zoom_data.zoom_scale;
+  double complex_width = 3.5/zoom_scale;
+  double complex_height = 2.0/zoom_scale;
+  double complex_left = user_zoom_data.complex_left;
+  double complex_bottom = user_zoom_data.complex_bottom;
+  double box[2][2] = {{complex_left,complex_left+complex_width},{complex_bottom,complex_bottom+complex_height}};
 
   for (unsigned int i = 0; i < pixmap->height; i++) {
     for (unsigned int j = 0; j < pixmap->width; j++) {
-      double x_scale_factor = ((complexWidth / (double) pixmap->width)); // X scaling multiplier based on pixmanp width and complex coordinate plane height
-      double y_scale_factor = ((complexHeight / (double) pixmap->height)); // Y scaling based on pixmap height and complex coordinate plane width
+      double x_scale_factor = ((complex_width / (double) pixmap->width)); // X scaling multiplier based on pixmanp width and complex coordinate plane height
+      double y_scale_factor = ((complex_height / (double) pixmap->height)); // Y scaling based on pixmap height and complex coordinate plane width
       double x = (x_scale_factor * (double) j) + box[0][0]; // Puts x into the complex coordinate plane width bounds and current coordinate position
       double y = (y_scale_factor * (double) i) + box[1][0]; // Puts x into the complex coordinate plane width bounds and current coordinate position
       
@@ -108,10 +111,42 @@ void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int it
   }
 }
 
+zoom_data get_zoom_data_from_opts(int argc, char * argv[]) {
+  zoom_data user_zoom_data;
 
-int main() {
+  user_zoom_data.zoom_scale = 1.0;
+  user_zoom_data.complex_left = -2.5;
+  user_zoom_data.complex_bottom = -1.0;
+  user_zoom_data.iterates = 100;
+
+  int opt;
+  while ((opt = getopt(argc, argv, "i:z:l:b:")) != -1) {
+    switch(opt) {
+      case 'i':
+	user_zoom_data.iterates = atof(optarg);
+	break;
+      case 'z':
+        user_zoom_data.zoom_scale = atof(optarg);
+	break;
+      case 'l':
+	user_zoom_data.complex_left = atof(optarg);
+	break;
+      case 'b':
+	user_zoom_data.complex_bottom = atof(optarg);
+	break;
+      default:
+	break;
+    }
+  }
+
+  return user_zoom_data;
+}
+
+int main(int argc, char * argv[]) {
   const unsigned int IMG_WIDTH = 2801;
   const unsigned int IMG_HEIGHT = 2001;
+  
+  zoom_data user_zoom_data = get_zoom_data_from_opts(argc, argv);
  
   pixmap_t pixmap;
   pixmap.pixels = calloc(IMG_WIDTH * IMG_HEIGHT, sizeof(pixel_t));
@@ -127,10 +162,7 @@ int main() {
   COLOR_K.g = 0x00;
   COLOR_K.b = 0x00;
 
-  // TODO Increase iterates for deep zooms. CLI interface would be nice!!
-  const unsigned int iterates = 100; 
-
-  color_mandelbrot_pixmap(&pixmap, COLOR_K, iterates);
+  color_mandelbrot_pixmap(user_zoom_data, &pixmap, COLOR_K);
   unsigned int write_png_status = write_png_from_pixmap(&pixmap, "mandel.png");
   
   free(pixmap.pixels);

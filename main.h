@@ -12,8 +12,16 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+typedef struct {
+  unsigned int iterates;
+  double zoom_scale;
+  double complex_left;
+  double complex_bottom;
+} zoom_data;
+
 pixel_t color_x(double x);
 double squared_modulus(double complex z);
-void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int iterates);
+void color_mandelbrot_pixmap(zoom_data user_zoom_data, pixmap_t * pixmap, pixel_t COLOR_K);
+zoom_data get_zoom_data_from_opts(int argc, char * argv[]);
 
 #endif
