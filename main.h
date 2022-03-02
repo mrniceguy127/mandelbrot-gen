@@ -15,8 +15,8 @@
 typedef struct {
   unsigned int iterates;
   double zoom_scale;
-  double complex_left;
-  double complex_bottom;
+  double complex_y_offset;
+  double complex_x_offset;
 } zoom_data;
 
 pixel_t color_x(double x);
