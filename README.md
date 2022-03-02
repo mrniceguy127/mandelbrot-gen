@@ -23,10 +23,10 @@ Working on this whenever I feel like it. Plans include:
 Open the mandel.png file in your current working directory, and there it is!
 
 ## Optional CLI arguments
-`-i` - Specify number of iterates.
-`-z` - Zoom scale. e.g. `-z 2` to double zoom on both axes.
-`-x` - Offset from minimum x (all the way to the left in default settings).
-`-y` - Offset from minimum y (all the way to the bottom in default settings).
+- `-i` - Specify number of iterates.
+- `-z` - Zoom scale. e.g. `-z 2` to double zoom on both axes.
+- `-x` - Offset from minimum x (all the way to the left in default settings).
+- `-y` - Offset from minimum y (all the way to the bottom in default settings).
 
 Example: `./build/mandel -i 10000 -x 1.001013 -y 0.817897 -z 80000`
 
