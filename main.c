@@ -19,19 +19,37 @@
 
 #include <complex.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "writepng.h"
 #include "main.h"
 
-#define TRUE 1
-#define FALSE 0
 
+
+static const int TRUE = 1;
+static const int FALSE = 0;
+
+
+
+static const double COMPLEX_X_MIN = -2.0;
+static const double COMPLEX_X_MAX = 0.47;
+
+static const double COMPLEX_Y_MIN = -1.12;
+static const double COMPLEX_Y_MAX = 1.12;
+
+const unsigned int IMG_WIDTH = 2470;
+const unsigned int IMG_HEIGHT = 2240;
+
+
+
+// Get rid of these hideous macros please.
 // Coloring constants - https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
 #define K ((double)log10(100000))
 #define COLOR_COMON_FACTOR ((double)(1 / log10(2.)))
 #define COLOR_R ((double)(1 / (2.5 * sqrt(2.)) * COLOR_COMON_FACTOR))
 #define COLOR_G ((double)(1 / (2.4 * sqrt(1.8)) * COLOR_COMON_FACTOR))
 #define COLOR_B ((double)(1 * COLOR_COMON_FACTOR))
+
 
 // Coloring formula.
 pixel_t color_x(double x) {
@@ -54,64 +72,92 @@ double squared_modulus(double complex z) {
   return (x*x) + (y*y);
 }
 
-void color_mandelbrot_pixmap(pixmap_t * pixmap, pixel_t COLOR_K, unsigned int iterates) {
+double get_scaled_unit(double fake_unit_point, double fake_unit_max, double true_unit_min, double true_unit_max, double zoom_scale) {
+  double true_length = true_unit_max - true_unit_min;
+  double single_true_unit = (true_length / zoom_scale) / fake_unit_max;
+  double true_unit_if_min_is_zero = single_true_unit * fake_unit_point;
+  return true_unit_min + true_unit_if_min_is_zero;
+}
 
-  /* Example zoom var vals:
-    const double zoomScale = 250000;
-    double complexLeft = -0.76;
-    double complexBottom = 0.0801;
-  */
+pixel_t get_mandel_pixel(pixel_t COLOR_K, zoom_data zoomVars, double true_x, double true_y) {
+  int max_iterates = zoomVars.iterates;
+  int curr_iterate = 0;
 
-  // TODO clean.
+  double complex c = true_x + (I * true_y); // c from mandelbrot formula
+  double complex z = 0.0; // z from mandelbrot formula
 
-  const double zoomScale = 1;
-  double complexWidth = 3.5/zoomScale;
-  double complexHeight = 2.0/zoomScale;
-  double complexLeft = -2.5;
-  double complexBottom = -1.0;
-  double box[2][2] = {{complexLeft,complexLeft+complexWidth},{complexBottom,complexBottom+complexHeight}};
+  double power = 1.;
+  unsigned int n = 0;
+  double R2 = 0;
+  double maxR2 = 1000; // creates better coloring when higher.
+  
+  while (R2 <= maxR2 && curr_iterate < max_iterates) {
+    z = ((z*z) + c);
+    power *= 2;
 
-  for (unsigned int i = 0; i < pixmap->height; i++) {
-    for (unsigned int j = 0; j < pixmap->width; j++) {
-      double x_scale_factor = ((complexWidth / (double) pixmap->width)); // X scaling multiplier based on pixmanp width and complex coordinate plane height
-      double y_scale_factor = ((complexHeight / (double) pixmap->height)); // Y scaling based on pixmap height and complex coordinate plane width
-      double x = (x_scale_factor * (double) j) + box[0][0]; // Puts x into the complex coordinate plane width bounds and current coordinate position
-      double y = (y_scale_factor * (double) i) + box[1][0]; // Puts x into the complex coordinate plane width bounds and current coordinate position
-      
-      double complex c = x + (I * y); // c from mandelbrot formula
-      double complex z = 0.0; // z from mandelbrot formula
+    R2 = squared_modulus(z);
 
-      pixel_t * pixel_to_color = pixel_at(pixmap, j, i);
-      pixel_t color = COLOR_K;
+    curr_iterate++;
+  }
 
-      double power = 1.;
-      unsigned int is_in_mandelbrot = TRUE;
-      unsigned int n = 0;
+  if (curr_iterate == max_iterates) return COLOR_K;
 
-      while (n < iterates && is_in_mandelbrot) {
-	double R2 = squared_modulus(z);
-        if (R2 > 1000000) {
-	  double V = log10(R2)/power;
-	  double x = log10(V)/K;
-	  color = color_x(x);
-	  is_in_mandelbrot = FALSE;
-	}
-	z = ((z*z) + c);
-	power *= 2;
-	n++;
-      }
+  double V = log10(R2)/(power);
+  double x = log10(V)/K;
+  return color_x(x);
+}
 
-      pixel_to_color->r = color.r;
-      pixel_to_color->g = color.g;
-      pixel_to_color->b = color.b;
+void draw(pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen) {
+  int px;
+  int py;
+  for (px = 0; px < screen->width; px++) {
+    for (py = 0; py < screen->height; py++) {
+      double complex_x_offset = zoomVars.complex_x_offset;
+      double complex_y_offset = zoomVars.complex_y_offset;
+      double true_x = get_scaled_unit((double) px, (double) screen->width, COMPLEX_X_MIN + complex_x_offset, COMPLEX_X_MAX + complex_x_offset, zoomVars.zoom_scale);
+      double true_y = get_scaled_unit((double) py, (double) screen->height, COMPLEX_Y_MIN + complex_y_offset, COMPLEX_Y_MAX + complex_y_offset, zoomVars.zoom_scale);
+      pixel_t color_to_draw = get_mandel_pixel(COLOR_K, zoomVars, true_x, true_y);
+      screen->pixels[(py * (screen->width)) + px] = color_to_draw;
     }
   }
 }
 
 
-int main() {
-  const unsigned int IMG_WIDTH = 2801;
-  const unsigned int IMG_HEIGHT = 2001;
+
+zoom_data get_zoom_data_from_opts(int argc, char * argv[]) {
+  zoom_data user_zoom_data;
+
+  user_zoom_data.zoom_scale = 1.0;
+  user_zoom_data.complex_x_offset = 0;
+  user_zoom_data.complex_y_offset = 0;
+  user_zoom_data.iterates = 100;
+
+  int opt;
+  while ((opt = getopt(argc, argv, "i:z:x:y:")) != -1) {
+    switch(opt) {
+      case 'i':
+	user_zoom_data.iterates = atof(optarg);
+	break;
+      case 'z':
+        user_zoom_data.zoom_scale = atof(optarg);
+	break;
+      case 'y':
+	user_zoom_data.complex_y_offset = atof(optarg);
+	break;
+      case 'x':
+	user_zoom_data.complex_x_offset = atof(optarg);
+	break;
+      default:
+	break;
+    }
+  }
+
+  return user_zoom_data;
+}
+
+
+int main(int argc, char * argv[]) {
+  zoom_data user_zoom_data = get_zoom_data_from_opts(argc, argv);
  
   pixmap_t pixmap;
   pixmap.pixels = calloc(IMG_WIDTH * IMG_HEIGHT, sizeof(pixel_t));
@@ -127,10 +173,7 @@ int main() {
   COLOR_K.g = 0x00;
   COLOR_K.b = 0x00;
 
-  // TODO Increase iterates for deep zooms. CLI interface would be nice!!
-  const unsigned int iterates = 100; 
-
-  color_mandelbrot_pixmap(&pixmap, COLOR_K, iterates);
+  draw(COLOR_K, user_zoom_data, &pixmap);
   unsigned int write_png_status = write_png_from_pixmap(&pixmap, "mandel.png");
   
   free(pixmap.pixels);
