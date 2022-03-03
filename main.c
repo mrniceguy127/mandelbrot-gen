@@ -37,22 +37,20 @@ static const double COMPLEX_X_MAX = 0.47;
 static const double COMPLEX_Y_MIN = -1.12;
 static const double COMPLEX_Y_MAX = 1.12;
 
-const unsigned int IMG_WIDTH = 2470;
-const unsigned int IMG_HEIGHT = 2240;
+static const unsigned int IMG_WIDTH = 2470;
+static const unsigned int IMG_HEIGHT = 2240;
 
-
-
-// Get rid of these hideous macros please.
-// Coloring constants - https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
-#define K ((double)log10(100000))
-#define COLOR_COMON_FACTOR ((double)(1 / log10(2.)))
-#define COLOR_R ((double)(1 / (2.5 * sqrt(2.)) * COLOR_COMON_FACTOR))
-#define COLOR_G ((double)(1 / (2.4 * sqrt(1.8)) * COLOR_COMON_FACTOR))
-#define COLOR_B ((double)(1 * COLOR_COMON_FACTOR))
 
 
 // Coloring formula.
 pixel_t color_x(double x) {
+  // Coloring constants - https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
+  double k = ((double)log10(100000))
+  double colorCommonFactor = ((double)(1 / log10(2.)))
+  double color_r = ((double)(1 / (2.5 * sqrt(2.)) * COLOR_COMON_FACTOR))
+  double color_g = ((double)(1 / (2.4 * sqrt(1.8)) * COLOR_COMON_FACTOR))
+  double color_b = ((double)(1 * COLOR_COMON_FACTOR))
+
   double R = 255 * ((1 - cos(COLOR_R*x)) / 2);
   double G = 255 * ((1 - cos(COLOR_G*x)) / 2);
   double B = 255 * ((1 - cos(COLOR_B*x)) / 2);
