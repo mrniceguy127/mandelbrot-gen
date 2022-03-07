@@ -17,7 +17,15 @@ typedef struct {
   double zoom_scale;
   double complex_y_offset;
   double complex_x_offset;
+  unsigned int num_threads;
 } zoom_data;
+
+typedef struct {
+  unsigned int x_start;
+  unsigned int width;
+  unsigned int y_start;
+  unsigned int height;
+} screen_chunk;
 
 pixel_t color_x(double x);
 double squared_modulus(double complex z);

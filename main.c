@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <pthread.h>
 
 #include <complex.h>
 #include <math.h>
@@ -23,6 +24,7 @@
 
 #include "writepng.h"
 #include "main.h"
+
 
 
 
@@ -41,7 +43,6 @@ static const unsigned int IMG_WIDTH = 2470;
 static const unsigned int IMG_HEIGHT = 2240;
 
 static const double K_LOG_POWER = 100000; // K = log10(K_LOG_POWER) -  https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
-
 
 
 
@@ -108,11 +109,34 @@ pixel_t get_mandel_pixel(pixel_t COLOR_K, zoom_data zoomVars, double true_x, dou
   return color_x(x);
 }
 
-void draw(pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen) {
+
+// Partial function assumes chunkNum > 0;
+screen_chunk generateChunkData(pixmap_t * screen, unsigned int chunkNum, unsigned int numChunks) {
+  unsigned int screenWidth = screen->width;
+  unsigned int screenHeight = screen->height;
+
+  unsigned int chunkWidth = screenWidth / numChunks;
+  unsigned int chunkHeight = screenHeight;
+  screen_chunk chunk;
+  chunk.x_start = (chunkNum - 1) * chunkWidth;
+  chunk.width = screenWidth / numChunks;
+  chunk.y_start = 0;
+  chunk.height = chunkHeight;
+
+  if (chunkNum == numChunks && screenWidth % numChunks != 0) {
+    chunk.width = chunk.width + screenWidth % numChunks;
+  }
+
+  return chunk;
+}
+
+void drawChunk(pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen, unsigned int chunkNum, unsigned int numChunks) {
+  screen_chunk chunk = generateChunkData(screen, chunkNum, numChunks);
   int px;
   int py;
-  for (px = 0; px < screen->width; px++) {
-    for (py = 0; py < screen->height; py++) {
+
+  for (px = chunk.x_start; px < (chunk.x_start+chunk.width); px++) {
+    for (py = chunk.y_start; py < (chunk.y_start+chunk.height); py++) {
       double complex_x_offset = zoomVars.complex_x_offset;
       double complex_y_offset = zoomVars.complex_y_offset;
       double true_x = get_scaled_unit((double) px, (double) screen->width, COMPLEX_X_MIN + complex_x_offset, COMPLEX_X_MAX + complex_x_offset, zoomVars.zoom_scale);
@@ -120,6 +144,15 @@ void draw(pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen) {
       pixel_t color_to_draw = get_mandel_pixel(COLOR_K, zoomVars, true_x, true_y);
       screen->pixels[(py * (screen->width)) + px] = color_to_draw;
     }
+  }
+}
+
+void draw(pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen) {
+  int chunkNum;
+  int numChunks = zoomVars.num_threads;
+
+  for (chunkNum = 1; chunkNum <= numChunks; chunkNum++) {
+    drawChunk(COLOR_K, zoomVars, screen, chunkNum, numChunks);
   }
 }
 
@@ -132,24 +165,27 @@ zoom_data get_zoom_data_from_opts(int argc, char * argv[]) {
   user_zoom_data.complex_x_offset = 0;
   user_zoom_data.complex_y_offset = 0;
   user_zoom_data.iterates = 100;
+  user_zoom_data.num_threads = 1;
 
   int opt;
-  while ((opt = getopt(argc, argv, "i:z:x:y:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:z:x:y:t:")) != -1) {
     switch(opt) {
       case 'i':
-	user_zoom_data.iterates = atof(optarg);
-	break;
+        user_zoom_data.iterates = atof(optarg);
+        break;
       case 'z':
         user_zoom_data.zoom_scale = atof(optarg);
-	break;
+	      break;
       case 'y':
-	user_zoom_data.complex_y_offset = atof(optarg);
-	break;
+        user_zoom_data.complex_y_offset = atof(optarg);
+        break;
       case 'x':
-	user_zoom_data.complex_x_offset = atof(optarg);
-	break;
+	      user_zoom_data.complex_x_offset = atof(optarg);
+	      break;
+      case 't':
+        user_zoom_data.num_threads = atof(optarg);
       default:
-	break;
+	      break;
     }
   }
 

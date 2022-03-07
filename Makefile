@@ -2,14 +2,14 @@
 
 cc = gcc
 main = main.c writepng.c
-libs = png -lm
+libs = -lpng -lm -lpthread
 
 build_dir = ./build
 out = $(build_dir)/mandel
 
 build: $(main)
 	mkdir -p $(build_dir)
-	$(cc) $(main) -o $(out) -l $(libs)
+	$(cc) $(main) -o $(out) $(libs)
 	chmod +x $(out)
 
 clean:
