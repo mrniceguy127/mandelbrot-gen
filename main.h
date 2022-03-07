@@ -27,6 +27,14 @@ typedef struct {
   unsigned int height;
 } screen_chunk;
 
+typedef struct {
+  pixel_t COLOR_K;
+  zoom_data zoomVars;
+  pixmap_t * screen;
+  unsigned int chunkNum;
+  unsigned int numChunks;
+} draw_chunk_data;
+
 pixel_t color_x(double x);
 double squared_modulus(double complex z);
 void color_mandelbrot_pixmap(zoom_data user_zoom_data, pixmap_t * pixmap, pixel_t COLOR_K);

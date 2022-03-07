@@ -49,7 +49,7 @@ static const double K_LOG_POWER = 100000; // K = log10(K_LOG_POWER) -  https://w
 // Coloring formula.
 pixel_t color_x(double x) {
   // Coloring constants - https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
-  double k = log10(100000);
+  double k = log10(K_LOG_POWER);
   double colorCommonFactor = (double) (1 / log10(2.0));
   double color_r = (double) (1 / (2.5 * sqrt(2.0)) * colorCommonFactor);
   double color_g = (double) (1 / (2.4 * sqrt(1.8)) * colorCommonFactor);
@@ -88,7 +88,7 @@ pixel_t get_mandel_pixel(pixel_t COLOR_K, zoom_data zoomVars, double true_x, dou
   double complex c = true_x + (I * true_y); // c from mandelbrot formula
   double complex z = 0.0; // z from mandelbrot formula
 
-  double power = 1.;
+  double power = 1.0;
   unsigned int n = 0;
   double R2 = 0;
   double maxR2 = 1000; // creates better coloring when higher.
@@ -130,7 +130,15 @@ screen_chunk generateChunkData(pixmap_t * screen, unsigned int chunkNum, unsigne
   return chunk;
 }
 
-void drawChunk(pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen, unsigned int chunkNum, unsigned int numChunks) {
+void * drawChunk(void * drawChunkDataUntyped) {
+  draw_chunk_data * drawChunkData = (draw_chunk_data *) drawChunkDataUntyped;
+
+  pixmap_t * screen = drawChunkData->screen;
+  unsigned int chunkNum = drawChunkData->chunkNum;
+  unsigned int numChunks = drawChunkData->numChunks;
+  zoom_data zoomVars = drawChunkData->zoomVars;
+  pixel_t COLOR_K = drawChunkData->COLOR_K;
+
   screen_chunk chunk = generateChunkData(screen, chunkNum, numChunks);
   int px;
   int py;
@@ -145,14 +153,33 @@ void drawChunk(pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen, unsigned 
       screen->pixels[(py * (screen->width)) + px] = color_to_draw;
     }
   }
+
+  free(drawChunkData);
+  drawChunkData = NULL;
+}
+
+void drawChunkOnOwnThread(pthread_t * tid, pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen, unsigned int chunkNum, unsigned int numChunks) {
+  draw_chunk_data * drawChunkData = malloc(sizeof(draw_chunk_data));
+  drawChunkData->COLOR_K = COLOR_K;
+  drawChunkData->zoomVars = zoomVars;
+  drawChunkData->screen = screen;
+  drawChunkData->chunkNum = chunkNum;
+  drawChunkData->numChunks = numChunks;
+
+  pthread_create(tid, NULL, drawChunk, (void *) drawChunkData);
 }
 
 void draw(pixel_t COLOR_K, zoom_data zoomVars, pixmap_t * screen) {
   int chunkNum;
   int numChunks = zoomVars.num_threads;
+  pthread_t tids[zoomVars.num_threads];
 
   for (chunkNum = 1; chunkNum <= numChunks; chunkNum++) {
-    drawChunk(COLOR_K, zoomVars, screen, chunkNum, numChunks);
+    drawChunkOnOwnThread(&tids[chunkNum-1], COLOR_K, zoomVars, screen, chunkNum, numChunks);
+  }
+
+  for (chunkNum = 0; chunkNum < numChunks; chunkNum++) {
+    pthread_join(tids[chunkNum], NULL);
   }
 }
 
@@ -215,5 +242,6 @@ int main(int argc, char * argv[]) {
   
   free(pixmap.pixels);
   if (write_png_status != 0) return -1;
-  return 0;
+
+  pthread_exit(NULL);
 }
