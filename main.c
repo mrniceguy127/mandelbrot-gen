@@ -40,20 +40,23 @@ static const double COMPLEX_Y_MAX = 1.12;
 static const unsigned int IMG_WIDTH = 2470;
 static const unsigned int IMG_HEIGHT = 2240;
 
+static const double K_LOG_POWER = 100000; // K = log10(K_LOG_POWER) -  https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
+
+
 
 
 // Coloring formula.
 pixel_t color_x(double x) {
   // Coloring constants - https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
-  double k = ((double)log10(100000))
-  double colorCommonFactor = ((double)(1 / log10(2.)))
-  double color_r = ((double)(1 / (2.5 * sqrt(2.)) * COLOR_COMON_FACTOR))
-  double color_g = ((double)(1 / (2.4 * sqrt(1.8)) * COLOR_COMON_FACTOR))
-  double color_b = ((double)(1 * COLOR_COMON_FACTOR))
+  double k = log10(100000);
+  double colorCommonFactor = (double) (1 / log10(2.0));
+  double color_r = (double) (1 / (2.5 * sqrt(2.0)) * colorCommonFactor);
+  double color_g = (double) (1 / (2.4 * sqrt(1.8)) * colorCommonFactor);
+  double color_b = (double) (1 * colorCommonFactor);
 
-  double R = 255 * ((1 - cos(COLOR_R*x)) / 2);
-  double G = 255 * ((1 - cos(COLOR_G*x)) / 2);
-  double B = 255 * ((1 - cos(COLOR_B*x)) / 2);
+  double R = 255 * ((1 - cos(color_r*x)) / 2);
+  double G = 255 * ((1 - cos(color_g*x)) / 2);
+  double B = 255 * ((1 - cos(color_b*x)) / 2);
 
   pixel_t color;
   color.r = R;
@@ -101,7 +104,7 @@ pixel_t get_mandel_pixel(pixel_t COLOR_K, zoom_data zoomVars, double true_x, dou
   if (curr_iterate == max_iterates) return COLOR_K;
 
   double V = log10(R2)/(power);
-  double x = log10(V)/K;
+  double x = log10(V)/log10(K_LOG_POWER);
   return color_x(x);
 }
 
