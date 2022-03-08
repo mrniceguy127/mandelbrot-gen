@@ -1,0 +1,13 @@
+#!/bin/bash
+
+mkdir -p frames
+linenum=0
+
+
+while read line; do
+  echo "$line"
+  ./build/mandel -i 10000 -x 1.001013 -y 0.817897 -z $line -t 24
+  linenumformatted=$(printf "%05d" $linenum)
+  mv mandel.png "frames/$linenumformatted.png"
+  (( linenum++ ))
+done
