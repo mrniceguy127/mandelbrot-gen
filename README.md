@@ -12,6 +12,7 @@ Working on this whenever I feel like it. Plans include:
 - Better algorithm
 
 ## Dependencies
+- CUDA -- You'll need an NVIDIA card. See the `cpu-threaded` branch for cpu threaded rendering (that branch will NOT be updated).
 - gcc
 - libpng
 
