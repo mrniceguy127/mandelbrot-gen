@@ -1,15 +1,16 @@
 .PHONY: build clean run
 
-cc = gcc
-main = main.c writepng.c
-libs = -lpng -lm -lpthread
+cc = nvcc
+main = main.cu writepng.cu
+libs = -lpng
+opts = --expt-relaxed-constexpr
 
 build_dir = ./build
 out = $(build_dir)/mandel
 
 build: $(main)
 	mkdir -p $(build_dir)
-	$(cc) $(main) -o $(out) $(libs)
+	$(cc) $(main) -o $(out) $(libs) $(opts)
 	chmod +x $(out)
 
 clean:

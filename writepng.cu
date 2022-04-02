@@ -48,10 +48,10 @@ int write_png_from_pixmap(pixmap_t * pixmap, const char * path) {
     PNG_FILTER_TYPE_DEFAULT
   );
 
-  png_byte ** row_pointers = png_malloc(png, pixmap->height * sizeof(png_byte *));
+  png_byte ** row_pointers = (png_byte**) png_malloc(png, pixmap->height * sizeof(png_byte *));
   
   for (unsigned int y = 0; y < pixmap->height; y++) {
-    png_byte * row = png_malloc(png, sizeof(uint8_t) * pixmap->width * pixel_size);
+    png_byte * row = (png_byte*) png_malloc(png, sizeof(uint8_t) * pixmap->width * pixel_size);
     row_pointers[y] = row;
     for (unsigned int x = 0; x < pixmap->width; x++) {
       pixel_t * pixel = pixel_at(pixmap, x, y);

@@ -8,9 +8,11 @@ Working on this whenever I feel like it. Plans include:
 - CLI interface (not difficult, just haven't done it yet for some reason)
 - Deep zooms
 - Parallel processing
-  - For learning purposes and speed: Parallel processing using a GPU
+  - For learning purposes and speed: Parallel processing using a GPU -- IN PROGRESS, WORKING, JUST TRYING TO FIND MORE OPTIMIZATION!!!
+- Better algorithm
 
 ## Dependencies
+- CUDA -- You'll need an NVIDIA card. See the `cpu-threaded` branch for cpu threaded rendering (that branch will NOT be updated).
 - gcc
 - libpng
 
@@ -27,7 +29,6 @@ Open the mandel.png file in your current working directory, and there it is!
 - `-z` - Zoom scale. e.g. `-z 2` to double zoom on both axes.
 - `-x` - Offset from minimum x (all the way to the left in default settings) as a point on the mandelbrot coordinate plane and NOT PIXELS.
 - `-y` - Offset from minimum y (all the way to the bottom in default settings) as a point on the mandelbrot coordinate plane and NOT PIXELS.
-- `-t` - Specifiy number of threads to run calculations on (default is 1) e.g. `-t 24`
 
 Example: `./build/mandel -i 10000 -x 1.001013 -y 0.817897 -z 80000`
 
