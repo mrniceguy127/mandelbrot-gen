@@ -8,7 +8,7 @@ Working on this whenever I feel like it. Plans include:
 - CLI interface (not difficult, just haven't done it yet for some reason)
 - Deep zooms
 - Parallel processing
-  - For learning purposes and speed: Parallel processing using a GPU
+  - For learning purposes and speed: Parallel processing using a GPU IN PROGRESS
 
 ## Dependencies
 - gcc
