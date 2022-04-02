@@ -4,9 +4,7 @@ Mandelbrot fractal generator.
 ## Status
 Working on this whenever I feel like it. Plans include:
 
-- Other coloring related additions to the algorithm
-- CLI interface (not difficult, just haven't done it yet for some reason)
-- Deep zooms
+- Deep zooms -- This is pretty straight forward and I already have progress. Just want to speed up the program.
 - Parallel processing
   - For learning purposes and speed: Parallel processing using a GPU -- IN PROGRESS, WORKING, JUST TRYING TO FIND MORE OPTIMIZATION!!!
 - Better algorithm
