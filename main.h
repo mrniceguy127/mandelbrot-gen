@@ -12,6 +12,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+
+#include <complex>
+
 typedef struct {
   unsigned int iterates;
   double zoom_scale;
@@ -19,6 +22,12 @@ typedef struct {
   double complex_x_offset;
   unsigned int num_threads;
 } zoom_data;
+
+
+typedef struct {
+  double real;
+  double imag;
+} complex;
 
 typedef struct {
   unsigned int x_start;
@@ -28,16 +37,20 @@ typedef struct {
 } screen_chunk;
 
 typedef struct {
-  pixel_t COLOR_K;
   zoom_data zoomVars;
   pixmap_t * screen;
-  unsigned int chunkNum;
-  unsigned int numChunks;
+  unsigned int chunkIdx;
 } draw_chunk_data;
 
+__device__
 pixel_t color_x(double x);
-double squared_modulus(double complex z);
+
+__device__
+double squared_modulus(std::complex<double> z);
+
+__device__
 void color_mandelbrot_pixmap(zoom_data user_zoom_data, pixmap_t * pixmap, pixel_t COLOR_K);
+
 zoom_data get_zoom_data_from_opts(int argc, char * argv[]);
 
 #endif
