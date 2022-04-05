@@ -19,7 +19,7 @@ static const double COMPLEX_Y_MAX = 1.12;
 static const unsigned int IMG_WIDTH = 2470;
 static const unsigned int IMG_HEIGHT = 2240;
 
-static const double K_LOG_POWER = 100000; // K = log10(K_LOG_POWER) -  https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
+static const double BAILOUT_RADIUS = 100000000000; // K = log10(BAILOUT_RADIUS) -  https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
 
 
 
@@ -28,7 +28,7 @@ static const double K_LOG_POWER = 100000; // K = log10(K_LOG_POWER) -  https://w
 __device__
 pixel_t color_x(double x) {
   // Coloring constants - https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set
-  double k = log10(K_LOG_POWER);
+  double k = log10(BAILOUT_RADIUS);
   double colorCommonFactor = (double) (1 / log10(2.0));
   double color_r = (double) (1 / (2.5 * sqrt(2.0)) * colorCommonFactor);
   double color_g = (double) (1 / (2.4 * sqrt(1.8)) * colorCommonFactor);
@@ -43,14 +43,6 @@ pixel_t color_x(double x) {
 }
 
 __device__
-double squared_modulus(complex z) {
-  double x = z.real;
-  double y = z.imag;
-
-  return (x*x) + (y*y);
-}
-
-__device__
 double get_scaled_unit(double fake_unit_point, double fake_unit_max, double true_unit_min, double true_unit_max, double zoom_scale) {
   double true_length = true_unit_max - true_unit_min;
   double single_true_unit = (true_length / zoom_scale) / fake_unit_max;
@@ -58,61 +50,47 @@ double get_scaled_unit(double fake_unit_point, double fake_unit_max, double true
   return true_unit_min + true_unit_if_min_is_zero;
 }
 
-__device__
-complex mulComplex(complex x, complex y) {
-  double a = x.real;
-  double b = x.imag;
-  double c = y.real;
-  double d = y.imag;
 
-  // FOIL
-  double f = a * c;
-  double o = a * d;
-  double i = b * c;
-  double l = b * d;
-
-  double real = f - l;
-  double imag = o + i;
-
-  complex result;
-  result.real = real;
-  result.imag = imag;
-
-  return result;
-}
-__device__
-complex addComplex(complex x, complex y) {
-  complex result;
-  result.real = x.real + y.real;
-  result.imag = x.imag + y.imag;
-  return result;
-}
-
-
+// Using periodicity checking. Memory expensive, but faster.
 __device__
 pixel_t get_mandel_pixel(zoom_data zoomVars, double true_x, double true_y) {
   int max_iterates = zoomVars.iterates;
   int curr_iterate = 0;
 
-  complex c;
-  c.real = true_x;
-  c.imag = true_y; // c from mandelbrot formula
- 
-  complex z;
-  z.real = 0.0; // z from mandelbrot formula
-  z.imag = 0.0;
+  // z real (x) and z imag (y) complex num from mandelbrot formula
+  double x = 0.0;
+  double y = 0.0;
 
-  double power = 1.0;
+  double xSquared = 0;
+  double ySquared = 0;
+
   double R2 = 0;
-  double maxR2 = 1000; // creates better coloring when higher.
-  
-  while (R2 <= maxR2 && curr_iterate < max_iterates) {
-    z = addComplex(mulComplex(z, z), c);
-    power *= 2;
 
-    R2 = squared_modulus(z);
+  double x_old = 0;
+  double y_old = 0;
+  double period = 0;
+  
+  while (R2 <= BAILOUT_RADIUS && curr_iterate < max_iterates) {
+    y = 2 * x * y + true_y;
+    x = xSquared - ySquared + true_x;
+
+    xSquared = x*x;
+    ySquared = y*y;
+
+    R2 = xSquared + ySquared; // Squared modulus
 
     curr_iterate++;
+
+    if (x == x_old && y == y_old) {
+      curr_iterate = max_iterates;
+    } else {
+      period++;
+      if (period > 20) {
+	period = 0;
+	x_old = x;
+	y_old = y;
+      }
+    }
   }
 
 
@@ -124,15 +102,21 @@ pixel_t get_mandel_pixel(zoom_data zoomVars, double true_x, double true_y) {
     return COLOR_K;
   }
 
-  double V = log10(R2)/(power);
-  double x = log10(V)/log10(K_LOG_POWER);
-  return color_x(x);
+  double V = log10(R2) / (pow(2, curr_iterate));
+  double col_x = log10(V) / log10(BAILOUT_RADIUS);
+  return color_x(col_x);
 }
 
 __device__
 void drawChunk(zoom_data zoomVars, pixmap_t * screen, unsigned int chunkIdx) {
   int px = chunkIdx % IMG_WIDTH;
   int py = (chunkIdx - px) / IMG_WIDTH;
+
+  if (py % 2 != 0) {
+    py = (IMG_HEIGHT / 2) + ((int) (py / 2));
+  } else {
+    py = (IMG_HEIGHT / 2) - ((int) (py / 2));
+  }
 
   double complex_x_offset = zoomVars.complex_x_offset;
   double complex_y_offset = zoomVars.complex_y_offset;
