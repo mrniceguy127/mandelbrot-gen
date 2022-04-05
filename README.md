@@ -4,10 +4,9 @@ Mandelbrot fractal generator.
 ## Status
 Working on this whenever I feel like it. Plans include:
 
-- Deep zooms -- This is pretty straight forward and I already have progress. Just want to speed up the program.
-- Parallel processing
-  - For learning purposes and speed: Parallel processing using a GPU -- IN PROGRESS, WORKING, JUST TRYING TO FIND MORE OPTIMIZATION!!!
-- Better algorithm
+- Deep zooms -- This is pretty straight forward and I already have progress.
+  - Just want to speed up the program. (Done?)
+  - The final step!!! Then (finished) YouTube vid.
 
 ## Dependencies
 - CUDA -- You'll need an NVIDIA card. See the `cpu-threaded` branch for cpu threaded rendering (that branch will NOT be updated).
@@ -32,6 +31,11 @@ Example: `./build/mandel -i 10000 -x 1.001013 -y 0.817897 -z 80000`
 
 ![mandel.png](readme-assets/mandel.png "mandel.png")
 ![zoom.png](readme-assets/zoom.png "zoom.png")
+
+
+## ZOOOOO
+[OOOOOM](https://www.youtube.com/watch?v=bwpxdjsLIlw)
+
 
 ## License
 [GNU GPL v3.0](LICENSE)
