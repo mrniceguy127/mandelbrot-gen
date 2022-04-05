@@ -185,8 +185,7 @@ int main(int argc, char * argv[]) {
     return -1;
   }
  
-
-  int blockSize = 768;
+  int blockSize = 1024; // CUDA Compute Capability 3.5+
   int numBlocks = (N + blockSize - 1) / blockSize;
   draw<<<numBlocks, blockSize>>>(N, user_zoom_data, pixmap);
   cudaDeviceSynchronize();
