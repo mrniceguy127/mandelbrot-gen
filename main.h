@@ -12,45 +12,31 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+struct zoomdata_t {
+    double mandelX0;
+    double mandelX1;
+    double mandelY0;
+    double mandelY1;
+    unsigned long int maxIterates;
+};
 
-#include <complex>
-
-typedef struct {
-  unsigned int iterates;
-  double zoom_scale;
-  double complex_y_offset;
-  double complex_x_offset;
-  unsigned int num_threads;
-} zoom_data;
-
-
-typedef struct {
-  double real;
-  double imag;
-} complex;
-
-typedef struct {
-  unsigned int x_start;
-  unsigned int width;
-  unsigned int y_start;
-  unsigned int height;
-} screen_chunk;
-
-typedef struct {
-  zoom_data zoomVars;
-  pixmap_t * screen;
-  unsigned int chunkIdx;
-} draw_chunk_data;
 
 __device__
-pixel_t color_x(double x);
+pixel_t colorX(double x, double bailoutRadius);
 
 __device__
-double squared_modulus(std::complex<double> z);
+double getScaledUnit(double fakeUnitPoint, double fakeUnitMax, double trueUnitMin, double trueUnitMax);
 
 __device__
-void color_mandelbrot_pixmap(zoom_data user_zoom_data, pixmap_t * pixmap, pixel_t COLOR_K);
+pixel_t getMandelPixel(double trueX, double trueY, zoomdata_t& zoomData);
 
-zoom_data get_zoom_data_from_opts(int argc, char * argv[]);
+__device__
+void drawChunk(unsigned int chunkIdx, pixmap_t& screen, zoomdata_t& zoomData);
+
+__global__
+void draw(int n, pixmap_t& screen, zoomdata_t& zoomData);
+
+void processCLIOpts(int argc, char * argv[], zoomdata_t& zoomData, pixmap_t& screen);
+
 
 #endif

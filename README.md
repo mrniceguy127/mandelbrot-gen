@@ -23,11 +23,12 @@ Open the mandel.png file in your current working directory, and there it is!
 
 ## Optional CLI arguments
 - `-i` - Specify number of iterates.
-- `-z` - Zoom scale. e.g. `-z 2` to double zoom on both axes.
-- `-x` - Offset from minimum x (all the way to the left in default settings) as a point on the mandelbrot coordinate plane and NOT PIXELS.
+- `-x` - Offset from minimum x ("all the way" to the left in default settings) as a point on the mandelbrot coordinate plane and NOT PIXELS.
+- `-n` - Offset from maximum x ("all the way" to the right in default settings) as a point on the mandelbrot coordinate plane and NOT PIXELS.
 - `-y` - Offset from minimum y (all the way to the bottom in default settings) as a point on the mandelbrot coordinate plane and NOT PIXELS.
+- `-m` - Offset from maximum y ("all the way" to the top in default settings) as a point on the mandelbrot coordinate plane and NOT PIXELS.
 
-Example: `./build/mandel -i 10000 -x 1.001013 -y 0.817897 -z 80000`
+Example: `./build/mandel -i 10000 -x -2 -n 1 -y -1.5 -m 1.5`
 
 ![mandel.png](readme-assets/mandel.png "mandel.png")
 ![zoom.png](readme-assets/zoom.png "zoom.png")
