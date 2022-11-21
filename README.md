@@ -7,6 +7,7 @@ Working on this whenever I feel like it. Plans include:
 - Deep zooms -- This is pretty straight forward and I already have progress.
   - Just want to speed up the program. (Done?)
   - The final step!!! Then (finished) YouTube vid.
+- Considering the state of the GPU market and my old card, time to switch to OpenCL?
 
 ## Dependencies
 - CUDA -- You'll need an NVIDIA card. See the `cpu-threaded` branch for cpu threaded rendering (that branch will NOT be updated).
